@@ -49,9 +49,11 @@ def data_prepare(
 def domains_fit(
     config: Path = typer.Option(Path("configs/paper.yaml"), "--config"),  # noqa: B008
 ) -> None:
-    typer.echo(
-        "Run feature extraction and clustering through the configured experiment runner."
-    )
+    from cdira.pipeline import prepare_domains
+
+    cfg = _config(config, [])
+    prepared = prepare_domains(cfg)
+    typer.echo(json.dumps({"k": prepared.domains.k, "silhouette": prepared.domains.silhouette_scores}))
 
 
 @app.command("report")
@@ -71,9 +73,9 @@ def run_paper(
         typer.echo(run_smoke(cfg.paths.artifact_root))
         return
     run = RunArtifacts.create(cfg)
-    typer.echo(
-        f"Initialized full run at {run.root}; prepare data with `cdira data download` and `cdira data prepare` before training."
-    )
+    from cdira.pipeline import run_core_pipeline
+
+    typer.echo(run_core_pipeline(cfg, run))
 
 
 @app.command("run-ablation")
