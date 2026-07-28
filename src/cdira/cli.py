@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pandas as pd
 import torch
 import typer
 
@@ -89,7 +90,23 @@ def run_ablation(
 def run_loco(
     config: Path = typer.Option(Path("configs/paper.yaml"), "--config"),  # noqa: B008
 ) -> None:
-    typer.echo(f"LOCO configuration loaded from {config}")
+    from cdira.experiments.loco import aggregate_loco, build_loco_folds, run_loco_fold
+
+    cfg = _config(config, [])
+    manifest = cfg.paths.domain_root / "domain_manifest.csv"
+    if not manifest.exists():
+        raise typer.BadParameter(
+            f"Missing {manifest}; run `cdira domains fit --config {config}` first"
+        )
+    folds = build_loco_folds(pd.read_csv(manifest), cfg.seed)
+    results = []
+    for fold in folds:
+        results.append(run_loco_fold(fold, "cdira", cfg))
+    summary = aggregate_loco(results)
+    output = cfg.paths.artifact_root / "loco" / "summary.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    typer.echo(output)
 
 
 def run_smoke(output_root: Path) -> Path:

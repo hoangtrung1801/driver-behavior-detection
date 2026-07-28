@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
@@ -89,6 +90,9 @@ def prepare_domains(config: ExperimentConfig) -> PreparedData:
         config.seed,
     )
     domains.save(config.paths.domain_root / "pseudo_domains.npz")
+    pd.DataFrame(
+        [{"relative_path": path, "domain_id": domain_id} for path, domain_id in domains.labels_by_path.items()]
+    ).to_csv(config.paths.domain_root / "domain_manifest.csv", index=False)
     return PreparedData(bundle, domains, caches)
 
 
