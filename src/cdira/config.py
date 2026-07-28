@@ -92,7 +92,7 @@ def _set_nested(mapping: dict[str, Any], dotted_key: str, value: Any) -> None:
     for part in parts[:-1]:
         child = current.get(part)
         if not isinstance(child, dict):
-            raise ValueError(f"Cannot override {dotted_key}: {part} is not a mapping")
+            raise TypeError(f"Cannot override {dotted_key}: {part} is not a mapping")
         current = child
     current[parts[-1]] = value
 
@@ -100,7 +100,7 @@ def _set_nested(mapping: dict[str, Any], dotted_key: str, value: Any) -> None:
 def load_config(path: Path, overrides: list[str] | None = None) -> ExperimentConfig:
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
-        raise ValueError(f"Configuration root must be a mapping: {path}")
+        raise TypeError(f"Configuration root must be a mapping: {path}")
     for override in overrides or []:
         if "=" not in override:
             raise ValueError(f"Override must use key=value: {override}")

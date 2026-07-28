@@ -4,9 +4,10 @@ import hashlib
 import json
 import random
 import tempfile
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, Iterator, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -37,9 +38,7 @@ def select_device(requested: str) -> Any:
             "MPS was requested but torch.backends.mps.is_available() is false"
         )
     if requested == "cuda" and not torch.cuda.is_available():
-        raise RuntimeError(
-            "CUDA was requested but torch.cuda.is_available() is false"
-        )
+        raise RuntimeError("CUDA was requested but torch.cuda.is_available() is false")
     return torch.device(requested)
 
 
@@ -67,7 +66,10 @@ def run_cpu_boundary(
 
     logger = logging.getLogger("cdira.runtime")
     started = time.perf_counter()
-    cpu_tensors = [tensor.detach().to("cpu") if isinstance(tensor, torch.Tensor) else tensor for tensor in tensors]
+    cpu_tensors = [
+        tensor.detach().to("cpu") if isinstance(tensor, torch.Tensor) else tensor
+        for tensor in tensors
+    ]
     result = operation(*cpu_tensors)
     logger.info(
         "CPU boundary name=%s reason=%s source=%s destination=cpu duration_ms=%.3f",

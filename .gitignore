@@ -12,3 +12,5 @@ artifacts/
 *.npz
 *.npy
 *.zip
+*.pdf
+*.egg-info/
