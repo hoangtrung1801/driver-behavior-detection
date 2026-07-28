@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+.kaggle/
+data/
+artifacts/
+*.pt
+*.pth
+*.npz
+*.npy
+*.zip

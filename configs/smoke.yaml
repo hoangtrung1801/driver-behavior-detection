@@ -1,0 +1,48 @@
+seed: 42
+paths:
+  data_root: data/synthetic
+  manifest_root: artifacts/smoke/manifests
+  domain_root: artifacts/smoke/domains
+  artifact_root: artifacts
+  cache_root: artifacts/smoke/cache
+data:
+  image_size: 224
+  split: [0.8, 0.1, 0.1]
+  horizontal_flip: false
+  brightness: 0.2
+  num_workers: 0
+domains:
+  candidates: [2]
+  sample_size: 20
+  n_init: 2
+model:
+  num_classes: 10
+  top_k: 5
+  global_hidden: 256
+  roi_hidden: 512
+  fused_hidden: 512
+  routing_hidden: 128
+  domain_hidden: 256
+  grl_strength: 1.0
+training:
+  device: cpu
+  batch_size: 2
+  learning_rate: 0.00001
+  max_epochs: 1
+  patience: 1
+  mixed_precision: false
+  confidence_threshold: 0.9
+  loss_weights:
+    global_ce: 0.5
+    fused_ce: 1.0
+    routing_bce: 0.5
+    routing_regularizer: 0.01
+    domain_ce: 0.5
+routing:
+  primary_policy: head
+  comparison_policy: confidence
+  threshold: 0.9
+evaluation:
+  thresholds: [0.9]
+  corruption_levels: smoke
+profile: smoke
