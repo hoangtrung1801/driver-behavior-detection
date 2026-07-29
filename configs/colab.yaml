@@ -1,0 +1,48 @@
+seed: 42
+paths:
+  data_root: data/raw
+  manifest_root: data/manifests
+  domain_root: data/domains
+  artifact_root: artifacts/colab
+  cache_root: data/cache
+data:
+  image_size: 224
+  split: [0.8, 0.1, 0.1]
+  horizontal_flip: true
+  brightness: 0.2
+  num_workers: 2
+domains:
+  candidates: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+  sample_size: 5000
+  n_init: 10
+model:
+  num_classes: 10
+  top_k: 5
+  global_hidden: 256
+  roi_hidden: 512
+  fused_hidden: 512
+  routing_hidden: 128
+  domain_hidden: 256
+  grl_strength: 1.0
+training:
+  device: cuda
+  batch_size: 32
+  learning_rate: 0.00001
+  max_epochs: 10
+  patience: 3
+  mixed_precision: true
+  confidence_threshold: 0.9
+  loss_weights:
+    global_ce: 0.5
+    fused_ce: 1.0
+    routing_bce: 0.5
+    routing_regularizer: 0.01
+    domain_ce: 0.5
+routing:
+  primary_policy: head
+  comparison_policy: confidence
+  threshold: 0.9
+evaluation:
+  thresholds: [0.5, 0.9]
+  corruption_levels: standard
+profile: standard

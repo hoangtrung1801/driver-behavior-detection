@@ -17,3 +17,13 @@ def test_paper_config_resolves_fixed_reproduction_values() -> None:
 def test_override_is_validated() -> None:
     cfg = load_config(Path("configs/paper.yaml"), ["training.batch_size=8"])
     assert cfg.training.batch_size == 8
+
+
+def test_colab_config_targets_cuda_and_colab_artifacts() -> None:
+    config = load_config(Path("configs/colab.yaml"))
+    assert config.profile == "standard"
+    assert config.training.device == "cuda"
+    assert config.training.mixed_precision is True
+    assert config.data.num_workers == 2
+    assert config.paths.artifact_root == Path("artifacts/colab")
+    assert config.training.max_epochs == 10
