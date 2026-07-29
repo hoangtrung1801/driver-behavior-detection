@@ -4,20 +4,18 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import torch
+from matplotlib.figure import Figure
 from PIL import Image
 
 from cdira.evaluation.predict import PredictionTable
 
 
-def save_roi_figure(
-    table: PredictionTable,
-    index: int,
+def roi_overlay_figure(
     image: Image.Image,
     saliency: torch.Tensor,
     topk_indices: torch.Tensor,
-    destination: Path,
-) -> Path:
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    title: str,
+) -> Figure:
     figure, axis = plt.subplots(figsize=(5, 5))
     axis.imshow(image)
     heatmap = saliency.detach().cpu().numpy()
@@ -35,11 +33,23 @@ def save_roi_figure(
             color="cyan",
             marker="x",
         )
-    axis.set_title(
-        f"true={int(table.targets[index])} pred={int(table.predictions[index])}"
-    )
+    axis.set_title(title)
     axis.axis("off")
     figure.tight_layout()
+    return figure
+
+
+def save_roi_figure(
+    table: PredictionTable,
+    index: int,
+    image: Image.Image,
+    saliency: torch.Tensor,
+    topk_indices: torch.Tensor,
+    destination: Path,
+) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    title = f"true={int(table.targets[index])} pred={int(table.predictions[index])}"
+    figure = roi_overlay_figure(image, saliency, topk_indices, title)
     figure.savefig(destination, dpi=150)
     plt.close(figure)
     return destination
