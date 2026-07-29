@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -53,7 +55,12 @@ class Trainer:
         self.model.train(training)
         total = 0.0
         count = 0
-        for batch in loader:
+        phase = "train" if training else "validation"
+        try:
+            total_batches: int | None = len(loader)
+        except TypeError:
+            total_batches = None
+        for batch_index, batch in enumerate(loader, start=1):
             if training:
                 self.optimizer.zero_grad(set_to_none=True)
             loss = self._loss(batch)
@@ -64,15 +71,38 @@ class Trainer:
             batch_size = len(batch["target"])
             total += float(value.detach().cpu()) * batch_size
             count += batch_size
+            if batch_index % 50 == 0 or (
+                total_batches is not None and batch_index == total_batches
+            ):
+                denominator = str(total_batches) if total_batches is not None else "?"
+                print(
+                    f"{phase} progress: batch {batch_index}/{denominator} "
+                    f"loss={float(value.detach().cpu()):.4f}",
+                    flush=True,
+                )
         return total / max(count, 1)
 
-    def fit(self, train_loader: Any, validation_loader: Any) -> FitResult:
+    def fit(
+        self,
+        train_loader: Any,
+        validation_loader: Any,
+        on_epoch_end: Callable[[list[dict[str, float]]], None] | None = None,
+    ) -> FitResult:
         best = float("inf")
         stale = 0
         history: list[dict[str, float]] = []
         for epoch in range(self.max_epochs):
+            started = time.perf_counter()
             train_loss = self._run_epoch(train_loader, training=True)
             validation_loss = self._run_epoch(validation_loader, training=False)
+            elapsed = time.perf_counter() - started
+            print(
+                f"epoch {epoch + 1}/{self.max_epochs} "
+                f"train_loss={train_loss:.4f} "
+                f"val_loss={validation_loss:.4f} "
+                f"elapsed={elapsed:.1f}s",
+                flush=True,
+            )
             history.append(
                 {
                     "epoch": float(epoch + 1),
@@ -80,6 +110,8 @@ class Trainer:
                     "validation_loss": validation_loss,
                 }
             )
+            if on_epoch_end is not None:
+                on_epoch_end(history)
             if validation_loss < best:
                 best = validation_loss
                 stale = 0
