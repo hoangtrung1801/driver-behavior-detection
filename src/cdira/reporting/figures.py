@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import cast
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
-from matplotlib.patches import FancyBboxPatch
 from matplotlib.figure import Figure
+from matplotlib.patches import FancyBboxPatch
 from PIL import Image
 from sklearn.decomposition import PCA
 from torch import Tensor, nn
@@ -19,7 +20,8 @@ def denormalize(tensor: Tensor) -> np.ndarray:
     mean = np.asarray(IMAGENET_MEAN, dtype=np.float32).reshape(3, 1, 1)
     std = np.asarray(IMAGENET_STD, dtype=np.float32).reshape(3, 1, 1)
     array = tensor.detach().cpu().numpy().astype(np.float32) * std + mean
-    return np.clip(array, 0.0, 1.0).transpose(1, 2, 0)
+    result = np.clip(array, 0.0, 1.0).transpose(1, 2, 0)
+    return cast(np.ndarray, result)
 
 
 def class_distribution_figure(counts: Mapping[int, int]) -> Figure:
@@ -232,8 +234,8 @@ def per_class_f1_figure(per_class: Sequence[Mapping[str, float]]) -> Figure:
 
 
 def routing_usage_figure(metrics: Mapping[str, object]) -> Figure:
-    per_class = dict(metrics["per_class_roi_usage"])  # type: ignore[arg-type]
-    overall = float(metrics["roi_usage"])  # type: ignore[arg-type]
+    per_class = cast(Mapping[str, float], metrics["per_class_roi_usage"])
+    overall = float(cast(float, metrics["roi_usage"]))
     keys = sorted(per_class, key=int)
     figure, axis = plt.subplots(figsize=(7, 4))
     axis.bar([f"c{key}" for key in keys], [float(per_class[key]) for key in keys])
@@ -254,12 +256,12 @@ def model_comparison_figure(
 ) -> Figure:
     labels = ["accuracy", "macro F1"]
     cdira_values = [
-        float(cdira_metrics["accuracy"]),  # type: ignore[arg-type]
-        float(dict(cdira_metrics["macro"])["f1"]),  # type: ignore[arg-type]
+        float(cast(float, cdira_metrics["accuracy"])),
+        float(cast(Mapping[str, float], cdira_metrics["macro"])["f1"]),
     ]
     baseline_values = [
-        float(baseline_metrics["accuracy"]),  # type: ignore[arg-type]
-        float(dict(baseline_metrics["macro"])["f1"]),  # type: ignore[arg-type]
+        float(cast(float, baseline_metrics["accuracy"])),
+        float(cast(Mapping[str, float], baseline_metrics["macro"])["f1"]),
     ]
     positions = np.arange(len(labels))
     figure, axis = plt.subplots(figsize=(6, 4))

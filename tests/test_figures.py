@@ -6,9 +6,9 @@ import numpy as np
 import torch
 from matplotlib.figure import Figure
 from PIL import Image
+from torch import nn
 
 from cdira.reporting import figures
-
 
 HISTORY = [
     {"epoch": 1.0, "train_loss": 1.0, "validation_loss": 1.2},
@@ -91,8 +91,6 @@ def test_architecture_schematic_returns_figure_with_labels() -> None:
 
 
 def test_parameter_table_lists_modules_and_total() -> None:
-    import torch.nn as nn
-
     model = nn.Sequential(nn.Linear(4, 3), nn.Linear(3, 2))
     frame = figures.parameter_table(model)
     assert list(frame.columns) == ["module", "parameters"]

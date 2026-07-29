@@ -5,7 +5,6 @@ import pytest
 
 from cdira import colab
 
-
 VALID = b'{"username": "u", "key": "secret-key-value"}'
 
 

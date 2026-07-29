@@ -4,7 +4,7 @@ import json
 import sys
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 class ColabSetupError(RuntimeError):
@@ -63,9 +63,9 @@ def _validate_credentials_file(path: Path) -> None:
 
 
 def _colab_upload() -> Mapping[str, bytes]:
-    from google.colab import files  # type: ignore[import-not-found]
+    from google.colab import files
 
-    return files.upload()
+    return cast(Mapping[str, bytes], files.upload())
 
 
 def install_kaggle_credentials(
