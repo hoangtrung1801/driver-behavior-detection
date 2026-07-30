@@ -62,6 +62,13 @@ def report(run: Path = typer.Option(..., "--run")) -> None:  # noqa: B008
     typer.echo(build_reproduction_report(run))
 
 
+@app.command("report-html")
+def report_html(run: Path = typer.Option(..., "--run")) -> None:  # noqa: B008
+    from cdira.reporting.html_report import build_html_reproduction_report
+
+    typer.echo(build_html_reproduction_report(run))
+
+
 @app.command("run-paper")
 def run_paper(
     config: Path = typer.Option(Path("configs/paper.yaml"), "--config"),  # noqa: B008

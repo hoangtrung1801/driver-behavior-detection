@@ -14,3 +14,5 @@ artifacts/
 *.zip
 *.pdf
 *.egg-info/
+
+.claude
